@@ -84,10 +84,10 @@ def thread_recursive_search(list_links, actual_key):
                 [f.cancel() for f in futures if not f.done()]
                 exit()
         wait(futures)
-        print("WORKING ON NEW KEY ")
         del DICT_NOT_VISITED_LINKS[actual_key]
         next_key = next(iter(DICT_NOT_VISITED_LINKS))
         new_list_links = DICT_NOT_VISITED_LINKS[next_key]["links"]
+        print(f"WORKING ON NEW KEY: {next_key} ")
         thread_recursive_search(new_list_links, next_key)
 
 
