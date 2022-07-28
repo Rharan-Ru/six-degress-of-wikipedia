@@ -8,9 +8,12 @@ VISITED_LINKS = []
 DICT_NOT_VISITED_LINKS = {}
 NOT_VISITED_LINKS = []
 
-START_TERM = "/wiki/Megamind"
-LAST_TERM = "/WIKI/BATMAN"
-SHUT_ALL = False
+input_start = input('Type the initial article name: \n')
+input_last = input('Type the last article name: \n')
+
+START_TERM = f"/wiki/{input_start}"
+LAST_TERM = f"/WIKI/{input_last.upper()}"
+EXIT_SCRIPT = False
 
 session = requests.Session()
 
@@ -45,15 +48,18 @@ def get_all_links(link):
 
 
 def verify_links(list, parent):
-    global SHUT_ALL
+    global EXIT_SCRIPT
     for link in list:
         if link.upper() == LAST_TERM:
             path = DICT_NOT_VISITED_LINKS[parent]["path"]
+            url = f"https://en.wikipedia.org/{path[-1]}"
             print('\n')
             print(f'LINK ENCONTRADO NO CAMINHO: ')
-            print(f'{path} - {link} / PROFUNDIDADE DE: {len(path)}')
+            print(f'{path} - {link} / CLIQUES ATÉ O ARTIGO: {len(path)}')
+            print(f'Go to article:\n{url}')
             print('\n')
-            SHUT_ALL = True
+            print("FINALIZANDO PROCESSO")
+            EXIT_SCRIPT = True
 
 
 def recursive_search(parent_wiki, actual_key, index):
@@ -69,7 +75,7 @@ def recursive_search(parent_wiki, actual_key, index):
 
 
 def thread_recursive_search(list_links, actual_key):
-    global SHUT_ALL
+    global EXIT_SCRIPT
     print('LINKS ENCONTRADOS: ', len(list_links))
     with ThreadPoolExecutor(max_workers=6) as executor:
         futures = [
@@ -78,9 +84,8 @@ def thread_recursive_search(list_links, actual_key):
         for future in as_completed(futures):
             if future.cancelled():
                 continue
-            if SHUT_ALL:
+            if EXIT_SCRIPT:
                 executor.shutdown(wait=False)
-                print("FINALIZANDO PROCESSO")
                 [f.cancel() for f in futures if not f.done()]
                 exit()
         wait(futures)
